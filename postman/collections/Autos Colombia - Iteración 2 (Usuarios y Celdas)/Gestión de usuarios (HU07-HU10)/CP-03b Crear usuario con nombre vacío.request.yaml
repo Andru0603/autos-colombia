@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseUrl}}/usuarios"
+method: POST
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{adminId}}"
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "",
+      "apellido": "Cano",
+      "username": "pcano",
+      "password": "clave1234",
+      "rol": "OPERARIO"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("Mensaje contiene: obligatorio", function () { pm.expect(pm.response.json().mensaje).to.include("obligatorio"); });
+    language: text/javascript
+order: 4000

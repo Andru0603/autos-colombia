@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/celdas/resumen"
+method: GET
+headers:
+  Content-Type: application/json
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("Tiene CARRO y MOTO con los 3 estados", function () { const j = pm.response.json(); ["CARRO","MOTO"].forEach(t => { pm.expect(j).to.have.property(t); pm.expect(j[t]).to.have.all.keys("LIBRE","OCUPADA","MANTENIMIENTO"); }); });
+    language: text/javascript
+order: 7000

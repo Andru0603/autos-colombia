@@ -2,6 +2,10 @@
 workspace:
   id: b37f6150-9b7e-4018-89f8-de3a956013ee
 
+cloudResources:
+  collections:
+    ../postman/collections/Autos Colombia - Iteración 2 (Usuarios y Celdas): a6081513-1f1d-4c41-946a-77a78b7f5eca
+
 # All resources in the `postman/` folder are automatically registered in Local View.
 # Point to additional files outside the `postman/` folder to register them individually. Example:
 #localResources:

@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{baseUrl}}/usuarios"
+method: GET
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{operarioId}}"
+scripts:
+  - type: afterResponse
+    code: pm.test("Código HTTP 403", function () { pm.response.to.have.status(403); });
+    language: text/javascript
+order: 9000

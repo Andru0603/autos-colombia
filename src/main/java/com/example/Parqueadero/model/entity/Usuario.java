@@ -28,6 +28,10 @@ public class Usuario {
     @Column(name = "rol")
     private String rol;
 
+    // Iteración 2: baja lógica. true = puede iniciar sesión
+    @Column(name = "activo")
+    private Boolean activo = true;
+
     public Usuario() {
     }
 
@@ -77,5 +81,13 @@ public class Usuario {
 
     public void setRol(String rol) {
         this.rol = rol;
+    }
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
     }
 }

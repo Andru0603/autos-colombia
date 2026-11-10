@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/usuarios/{{adminId}}/estado"
+method: PUT
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{adminId}}"
+body:
+  type: json
+  content: |-
+    {
+      "activo": false
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("Mensaje contiene: propio usuario", function () { pm.expect(pm.response.json().mensaje).to.include("propio usuario"); });
+    language: text/javascript
+order: 15000

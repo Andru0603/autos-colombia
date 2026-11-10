@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/celdas/{{nuevaCeldaId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{adminId}}"
+body:
+  type: json
+  content: |-
+    {
+      "numero": "A-11",
+      "tipo": "CARRO"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("Número actualizado", function () { pm.expect(pm.response.json().numero).to.eql("A-11"); });
+    language: text/javascript
+order: 8000

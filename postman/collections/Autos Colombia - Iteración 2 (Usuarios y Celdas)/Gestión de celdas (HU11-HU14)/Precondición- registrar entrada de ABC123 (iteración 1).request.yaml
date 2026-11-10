@@ -1,0 +1,20 @@
+$kind: http-request
+name: "Precondición: registrar entrada de ABC123 (iteración 1)"
+url: "{{baseUrl}}/registro/entrada"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "placa": "ABC123",
+      "idUsuario": {{operarioId}}
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.collectionVariables.set("celdaOcupadaId", pm.response.json().celda.idCelda);
+    language: text/javascript
+order: 11000

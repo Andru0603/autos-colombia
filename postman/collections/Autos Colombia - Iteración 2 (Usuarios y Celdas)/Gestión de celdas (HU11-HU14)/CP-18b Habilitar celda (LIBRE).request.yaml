@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/celdas/{{nuevaCeldaId}}/estado"
+method: PUT
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{adminId}}"
+body:
+  type: json
+  content: |-
+    {
+      "estado": "LIBRE"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("Quedó LIBRE", function () { pm.expect(pm.response.json().estado).to.eql("LIBRE"); });
+    language: text/javascript
+order: 10000

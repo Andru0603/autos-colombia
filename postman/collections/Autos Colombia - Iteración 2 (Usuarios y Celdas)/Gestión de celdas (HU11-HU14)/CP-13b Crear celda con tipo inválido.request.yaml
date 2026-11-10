@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/celdas"
+method: POST
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{adminId}}"
+body:
+  type: json
+  content: |-
+    {
+      "numero": "Z-99",
+      "tipo": "CAMION"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("Mensaje contiene: Tipo inválido", function () { pm.expect(pm.response.json().mensaje).to.include("Tipo inválido"); });
+    language: text/javascript
+order: 3000

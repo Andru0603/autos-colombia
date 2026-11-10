@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/usuarios"
+method: POST
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{adminId}}"
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "Laura",
+      "apellido": "Gómez",
+      "username": "lgomez",
+      "password": "clave1234",
+      "rol": "OPERARIO"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      const j = pm.response.json();
+      pm.collectionVariables.set("nuevoUsuarioId", j.idUsuario);
+      pm.test("Queda activo y sin contraseña en la respuesta", function () { pm.expect(j.activo).to.eql(true); pm.expect(j).to.not.have.property("passwordHash"); pm.expect(j).to.not.have.property("password"); });
+    language: text/javascript
+order: 1000

@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseUrl}}/usuarios"
+method: POST
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{adminId}}"
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "Pedro",
+      "apellido": "Cano",
+      "username": "pcano",
+      "password": "abc12",
+      "rol": "OPERARIO"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("Mensaje contiene: mínimo 8", function () { pm.expect(pm.response.json().mensaje).to.include("mínimo 8"); });
+    language: text/javascript
+order: 3000

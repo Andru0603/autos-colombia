@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/usuarios"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "X",
+      "apellido": "Y",
+      "username": "xy",
+      "password": "clave1234",
+      "rol": "OPERARIO"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("Código HTTP 403", function () { pm.response.to.have.status(403); });
+    language: text/javascript
+order: 6000

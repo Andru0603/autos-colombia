@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/celdas?tipo=MOTO&estado=LIBRE"
+method: GET
+headers:
+  Content-Type: application/json
+queryParams:
+  tipo: MOTO
+  estado: LIBRE
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("Todas MOTO y LIBRE", function () { pm.response.json().forEach(c => { pm.expect(c.tipo).to.eql("MOTO"); pm.expect(c.estado).to.eql("LIBRE"); }); });
+    language: text/javascript
+order: 6000

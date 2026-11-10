@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/usuarios?rol=OPERARIO&q=gomez"
+method: GET
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{adminId}}"
+queryParams:
+  rol: OPERARIO
+  q: gomez
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("Solo OPERARIO que coinciden con gomez", function () { const l = pm.response.json(); pm.expect(l.length).to.be.above(0); l.forEach(u => pm.expect(u.rol).to.eql("OPERARIO")); });
+    language: text/javascript
+order: 8000

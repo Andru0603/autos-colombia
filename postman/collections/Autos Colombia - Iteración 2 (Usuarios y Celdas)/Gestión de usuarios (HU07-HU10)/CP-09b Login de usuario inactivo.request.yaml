@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "username": "lgomez",
+      "password": "nuevaClave99"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("Mensaje contiene: inactivo", function () { pm.expect(pm.response.json().mensaje).to.include("inactivo"); });
+    language: text/javascript
+order: 14000

@@ -1,0 +1,22 @@
+$kind: http-request
+url: "{{baseUrl}}/celdas"
+method: POST
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{adminId}}"
+body:
+  type: json
+  content: |-
+    {
+      "numero": "A-10",
+      "tipo": "CARRO"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      const j = pm.response.json();
+      pm.collectionVariables.set("nuevaCeldaId", j.idCelda);
+      pm.test("Nace LIBRE", function () { pm.expect(j.estado).to.eql("LIBRE"); });
+    language: text/javascript
+order: 1000

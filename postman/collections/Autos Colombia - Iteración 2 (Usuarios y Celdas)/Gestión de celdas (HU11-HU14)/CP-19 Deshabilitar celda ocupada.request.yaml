@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/celdas/{{celdaOcupadaId}}/estado"
+method: PUT
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{adminId}}"
+body:
+  type: json
+  content: |-
+    {
+      "estado": "MANTENIMIENTO"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("Mensaje contiene: ocupada", function () { pm.expect(pm.response.json().mensaje).to.include("ocupada"); });
+    language: text/javascript
+order: 13000

@@ -1,0 +1,9 @@
+$kind: collection
+description: Colección de pruebas de la iteración 2. Ejecutar sobre la base de datos con los datos de prueba (admin id=1, operario id=2). Ejecutar en orden, una sola vez por base limpia.
+variables:
+  baseUrl: http://localhost:8082/api
+  adminId: "1"
+  operarioId: "2"
+  nuevoUsuarioId: ""
+  nuevaCeldaId: ""
+  celdaOcupadaId: ""

@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/celdas"
+method: POST
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{adminId}}"
+body:
+  type: json
+  content: |-
+    {
+      "numero": "A-10",
+      "tipo": "CARRO"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("Mensaje contiene: Ya existe", function () { pm.expect(pm.response.json().mensaje).to.include("Ya existe"); });
+    language: text/javascript
+order: 2000
