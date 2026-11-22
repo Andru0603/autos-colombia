@@ -1,0 +1,20 @@
+$kind: http-request
+name: CP-13 María ya puede entrar tras pagar (integra la iteración 1)
+url: "{{baseUrl}}/registro/entrada"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "placa": "DEF456",
+      "idUsuario": {{operarioId}}
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("Se asignó una celda", function () { pm.expect(pm.response.json().celda).to.have.property("numero"); });
+    language: text/javascript
+order: 4000

@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/pagos/calcular?documento=9999999999&meses=1"
+method: GET
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{operarioId}}"
+queryParams:
+  documento: "9999999999"
+  meses: "1"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("Mensaje contiene: No existe un cliente", function () { pm.expect(pm.response.json().mensaje).to.include("No existe un cliente"); });
+    language: text/javascript
+order: 2000

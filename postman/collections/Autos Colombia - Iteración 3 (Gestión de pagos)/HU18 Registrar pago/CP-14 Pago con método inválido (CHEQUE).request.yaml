@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/pagos"
+method: POST
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{operarioId}}"
+body:
+  type: json
+  content: |-
+    {
+      "documento": "1010101010",
+      "meses": 1,
+      "metodoPago": "CHEQUE"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("Mensaje contiene: Método de pago inválido", function () { pm.expect(pm.response.json().mensaje).to.include("Método de pago inválido"); });
+    language: text/javascript
+order: 5000

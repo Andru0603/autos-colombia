@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/pagos/calcular?documento=1010101010&meses=13"
+method: GET
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{operarioId}}"
+queryParams:
+  documento: "1010101010"
+  meses: "13"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("Mensaje contiene: entre 1 y 12", function () { pm.expect(pm.response.json().mensaje).to.include("entre 1 y 12"); });
+    language: text/javascript
+order: 3000

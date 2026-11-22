@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/pagos/recaudo?desde=2026-12-31&hasta=2026-01-01"
+method: GET
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{adminId}}"
+queryParams:
+  desde: 2026-12-31
+  hasta: 2026-01-01
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("Mensaje contiene: fecha inicial", function () { pm.expect(pm.response.json().mensaje).to.include("fecha inicial"); });
+    language: text/javascript
+order: 3000

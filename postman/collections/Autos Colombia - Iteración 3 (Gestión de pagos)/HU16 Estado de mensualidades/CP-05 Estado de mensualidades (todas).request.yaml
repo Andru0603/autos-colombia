@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/pagos/mensualidades"
+method: GET
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{operarioId}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("Juan VIGENTE y María VENCIDA", function () { const l = pm.response.json(); const juan = l.find(c => c.documento === "1010101010"); const maria = l.find(c => c.documento === "2020202020"); pm.expect(juan.estado).to.eql("VIGENTE"); pm.expect(maria.estado).to.eql("VENCIDA"); });
+    language: text/javascript
+order: 1000

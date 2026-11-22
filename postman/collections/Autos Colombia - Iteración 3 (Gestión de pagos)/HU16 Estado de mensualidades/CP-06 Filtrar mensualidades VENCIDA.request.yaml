@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/pagos/mensualidades?estado=VENCIDA"
+method: GET
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{operarioId}}"
+queryParams:
+  estado: VENCIDA
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("Solo vencidas e incluye a María", function () { const l = pm.response.json(); pm.expect(l.length).to.be.above(0); l.forEach(c => pm.expect(c.estado).to.eql("VENCIDA")); pm.expect(l.some(c => c.documento === "2020202020")).to.eql(true); });
+    language: text/javascript
+order: 2000

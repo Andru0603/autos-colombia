@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/tarifas"
+method: GET
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{operarioId}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("Hay tarifa de CARRO (150000) y de MOTO (70000)", function () { const l = pm.response.json(); const c = l.find(t => t.tipo === "CARRO"); const m = l.find(t => t.tipo === "MOTO"); pm.expect(Number(c.valorMensual)).to.eql(150000); pm.expect(Number(m.valorMensual)).to.eql(70000); });
+    language: text/javascript
+order: 1000

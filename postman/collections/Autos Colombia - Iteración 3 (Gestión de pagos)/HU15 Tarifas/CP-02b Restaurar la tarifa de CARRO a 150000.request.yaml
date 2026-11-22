@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/tarifas/CARRO"
+method: PUT
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{adminId}}"
+body:
+  type: json
+  content: |-
+    {
+      "valorMensual": 150000
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("Valor restaurado a 150000", function () { pm.expect(Number(pm.response.json().valorMensual)).to.eql(150000); });
+    language: text/javascript
+order: 3000

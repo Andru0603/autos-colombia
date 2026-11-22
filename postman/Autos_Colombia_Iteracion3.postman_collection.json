@@ -1,0 +1,1161 @@
+{
+  "info": {
+    "_postman_id": "982b9a7f-8eca-42e5-800b-97913f2b449d",
+    "name": "Autos Colombia - Iteración 3 (Gestión de pagos)",
+    "description": "Pruebas de la iteración 3. ANTES de ejecutar: correr database/reset_pruebas_iteracion3.sql en Workbench (deja tarifas, mensualidades y pagos en su estado inicial). Ejecutar en orden. Datos: admin id=1, operario id=2, Juan Pérez (vigente, carro+moto) y María López (vencida, carro).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Rango de fechas del día de hoy (ayer a mañana) para el recaudo",
+          "const d = new Date();",
+          "const f = x => x.toISOString().slice(0, 10);",
+          "pm.collectionVariables.set('fechaDesde', f(new Date(d.getTime() - 86400000)));",
+          "pm.collectionVariables.set('fechaHasta', f(new Date(d.getTime() + 86400000)));"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "HU15 Tarifas",
+      "item": [
+        {
+          "name": "CP-01 Consultar tarifas (operario)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tarifas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tarifas"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Hay tarifa de CARRO (150000) y de MOTO (70000)\", function () { const l = pm.response.json(); const c = l.find(t => t.tipo === \"CARRO\"); const m = l.find(t => t.tipo === \"MOTO\"); pm.expect(Number(c.valorMensual)).to.eql(150000); pm.expect(Number(m.valorMensual)).to.eql(70000); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-02 Admin actualiza la tarifa de CARRO a 160000",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{adminId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tarifas/CARRO",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tarifas",
+                "CARRO"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"valorMensual\": 160000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Nuevo valor 160000\", function () { pm.expect(Number(pm.response.json().valorMensual)).to.eql(160000); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-02b Restaurar la tarifa de CARRO a 150000",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{adminId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tarifas/CARRO",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tarifas",
+                "CARRO"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"valorMensual\": 150000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor restaurado a 150000\", function () { pm.expect(Number(pm.response.json().valorMensual)).to.eql(150000); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-03 Operario intenta actualizar una tarifa (403)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tarifas/CARRO",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tarifas",
+                "CARRO"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"valorMensual\": 99999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-04 Tarifa con valor 0 (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{adminId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tarifas/CARRO",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tarifas",
+                "CARRO"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"valorMensual\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Mensaje contiene: mayor que 0\", function () { pm.expect(pm.response.json().mensaje).to.include(\"mayor que 0\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HU16 Estado de mensualidades",
+      "item": [
+        {
+          "name": "CP-05 Estado de mensualidades (todas)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/mensualidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "mensualidades"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Juan VIGENTE y María VENCIDA\", function () { const l = pm.response.json(); const juan = l.find(c => c.documento === \"1010101010\"); const maria = l.find(c => c.documento === \"2020202020\"); pm.expect(juan.estado).to.eql(\"VIGENTE\"); pm.expect(maria.estado).to.eql(\"VENCIDA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-06 Filtrar mensualidades VENCIDA",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/mensualidades?estado=VENCIDA",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "mensualidades"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "VENCIDA"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Solo vencidas e incluye a María\", function () { const l = pm.response.json(); pm.expect(l.length).to.be.above(0); l.forEach(c => pm.expect(c.estado).to.eql(\"VENCIDA\")); pm.expect(l.some(c => c.documento === \"2020202020\")).to.eql(true); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HU17 Calcular valor a pagar",
+      "item": [
+        {
+          "name": "CP-07 Calcular valor: Juan (carro + moto), 2 meses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/calcular?documento=1010101010&meses=2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "calcular"
+              ],
+              "query": [
+                {
+                  "key": "documento",
+                  "value": "1010101010"
+                },
+                {
+                  "key": "meses",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor mensual 220000 (150000 + 70000)\", function () { pm.expect(Number(pm.response.json().valorMensual)).to.eql(220000); });",
+                  "pm.test(\"Total 440000\", function () { pm.expect(Number(pm.response.json().total)).to.eql(440000); });",
+                  "pm.test(\"Tiene 2 vehículos y no guarda nada\", function () { pm.expect(pm.response.json().vehiculos.length).to.eql(2); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-08 Calcular con documento inexistente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/calcular?documento=9999999999&meses=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "calcular"
+              ],
+              "query": [
+                {
+                  "key": "documento",
+                  "value": "9999999999"
+                },
+                {
+                  "key": "meses",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Mensaje contiene: No existe un cliente\", function () { pm.expect(pm.response.json().mensaje).to.include(\"No existe un cliente\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-09 Calcular con 13 meses (fuera de rango)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/calcular?documento=1010101010&meses=13",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "calcular"
+              ],
+              "query": [
+                {
+                  "key": "documento",
+                  "value": "1010101010"
+                },
+                {
+                  "key": "meses",
+                  "value": "13"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Mensaje contiene: entre 1 y 12\", function () { pm.expect(pm.response.json().mensaje).to.include(\"entre 1 y 12\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HU18 Registrar pago",
+      "item": [
+        {
+          "name": "CP-10 Registrar pago de Juan (1 mes, EFECTIVO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documento\": \"1010101010\",\n  \"meses\": 1,\n  \"metodoPago\": \"EFECTIVO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set(\"pagoJuanId\", j.idPago);",
+                  "pm.test(\"Monto 220000 calculado por el sistema\", function () { pm.expect(Number(j.monto)).to.eql(220000); });",
+                  "pm.test(\"Tiene comprobante y la vigencia avanza\", function () { pm.expect(j.numeroComprobante).to.match(/^REC-\\d{6}$/); pm.expect(j.vigenteHasta > j.vigenteDesde).to.eql(true); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-11 María (mensualidad vencida) intenta entrar: se rechaza",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/registro/entrada",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "registro",
+                "entrada"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"placa\": \"DEF456\",\n  \"idUsuario\": {{operarioId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Mensaje contiene: mensualidad vigente\", function () { pm.expect(pm.response.json().mensaje).to.include(\"mensualidad vigente\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-12 Registrar pago de María (1 mes, TRANSFERENCIA)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documento\": \"2020202020\",\n  \"meses\": 1,\n  \"metodoPago\": \"TRANSFERENCIA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set(\"pagoMariaId\", j.idPago);",
+                  "pm.test(\"Monto 150000\", function () { pm.expect(Number(j.monto)).to.eql(150000); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-13 María ya puede entrar tras pagar (integra la iteración 1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/registro/entrada",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "registro",
+                "entrada"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"placa\": \"DEF456\",\n  \"idUsuario\": {{operarioId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Se asignó una celda\", function () { pm.expect(pm.response.json().celda).to.have.property(\"numero\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-14 Pago con método inválido (CHEQUE)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documento\": \"1010101010\",\n  \"meses\": 1,\n  \"metodoPago\": \"CHEQUE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Mensaje contiene: Método de pago inválido\", function () { pm.expect(pm.response.json().mensaje).to.include(\"Método de pago inválido\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-15 Registrar pago sin identificar al usuario (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documento\": \"1010101010\",\n  \"meses\": 1,\n  \"metodoPago\": \"EFECTIVO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HU19 Comprobante",
+      "item": [
+        {
+          "name": "CP-16 Generar comprobante del pago de Juan",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/{{pagoJuanId}}/comprobante",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "{{pagoJuanId}}",
+                "comprobante"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Monto 220000\", function () { pm.expect(Number(pm.response.json().monto)).to.eql(220000); });",
+                  "pm.test(\"Número de comprobante y datos del cliente\", function () { const j = pm.response.json(); pm.expect(j.numeroComprobante).to.match(/^REC-\\d{6}$/); pm.expect(j.documento).to.eql(\"1010101010\"); pm.expect(j.vehiculos.length).to.eql(2); pm.expect(j).to.have.property(\"registradoPor\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-17 Comprobante de un pago inexistente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/99999/comprobante",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "99999",
+                "comprobante"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Mensaje contiene: Pago no encontrado\", function () { pm.expect(pm.response.json().mensaje).to.include(\"Pago no encontrado\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HU20 Historial de pagos",
+      "item": [
+        {
+          "name": "CP-18 Historial de pagos por documento",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos?documento=1010101010",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos"
+              ],
+              "query": [
+                {
+                  "key": "documento",
+                  "value": "1010101010"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Un pago de Juan\", function () { const l = pm.response.json(); pm.expect(l.length).to.eql(1); pm.expect(l[0].cliente.documento).to.eql(\"1010101010\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-19 Historial en un rango sin pagos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos?desde=2000-01-01&hasta=2000-01-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2000-01-01"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2000-01-31"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Lista vacía\", function () { pm.expect(pm.response.json().length).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HU21 Recaudo por periodo",
+      "item": [
+        {
+          "name": "CP-20 Recaudo del periodo (hoy)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{adminId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/recaudo?desde={{fechaDesde}}&hasta={{fechaHasta}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "recaudo"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "{{fechaDesde}}"
+                },
+                {
+                  "key": "hasta",
+                  "value": "{{fechaHasta}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"2 pagos\", function () { pm.expect(Number(pm.response.json().cantidadPagos)).to.eql(2); });",
+                  "pm.test(\"Total recaudado 370000\", function () { pm.expect(Number(pm.response.json().totalRecaudado)).to.eql(370000); });",
+                  "pm.test(\"EFECTIVO 220000\", function () { pm.expect(Number(pm.response.json().porMetodo.EFECTIVO)).to.eql(220000); });",
+                  "pm.test(\"TRANSFERENCIA 150000\", function () { pm.expect(Number(pm.response.json().porMetodo.TRANSFERENCIA)).to.eql(150000); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-21 Operario intenta ver el recaudo (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{operarioId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/recaudo?desde={{fechaDesde}}&hasta={{fechaHasta}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "recaudo"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "{{fechaDesde}}"
+                },
+                {
+                  "key": "hasta",
+                  "value": "{{fechaHasta}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-22 Recaudo con fecha inicial posterior a la final",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "{{adminId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/recaudo?desde=2026-12-31&hasta=2026-01-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "recaudo"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-12-31"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-01-01"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Mensaje contiene: fecha inicial\", function () { pm.expect(pm.response.json().mensaje).to.include(\"fecha inicial\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Limpieza: registrar salida de DEF456",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/registro/salida/DEF456",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "registro",
+                "salida",
+                "DEF456"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código HTTP 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8082/api"
+    },
+    {
+      "key": "adminId",
+      "value": "1"
+    },
+    {
+      "key": "operarioId",
+      "value": "2"
+    },
+    {
+      "key": "pagoJuanId",
+      "value": ""
+    },
+    {
+      "key": "pagoMariaId",
+      "value": ""
+    },
+    {
+      "key": "fechaDesde",
+      "value": ""
+    },
+    {
+      "key": "fechaHasta",
+      "value": ""
+    }
+  ]
+}

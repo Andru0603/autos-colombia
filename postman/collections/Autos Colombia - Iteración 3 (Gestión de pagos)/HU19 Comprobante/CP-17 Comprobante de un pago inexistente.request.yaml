@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/pagos/99999/comprobante"
+method: GET
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{operarioId}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("Mensaje contiene: Pago no encontrado", function () { pm.expect(pm.response.json().mensaje).to.include("Pago no encontrado"); });
+    language: text/javascript
+order: 2000

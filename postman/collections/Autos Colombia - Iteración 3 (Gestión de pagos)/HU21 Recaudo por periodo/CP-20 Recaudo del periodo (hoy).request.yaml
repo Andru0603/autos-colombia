@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/pagos/recaudo?desde={{fechaDesde}}&hasta={{fechaHasta}}"
+method: GET
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{adminId}}"
+queryParams:
+  desde: "{{fechaDesde}}"
+  hasta: "{{fechaHasta}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("2 pagos", function () { pm.expect(Number(pm.response.json().cantidadPagos)).to.eql(2); });
+      pm.test("Total recaudado 370000", function () { pm.expect(Number(pm.response.json().totalRecaudado)).to.eql(370000); });
+      pm.test("EFECTIVO 220000", function () { pm.expect(Number(pm.response.json().porMetodo.EFECTIVO)).to.eql(220000); });
+      pm.test("TRANSFERENCIA 150000", function () { pm.expect(Number(pm.response.json().porMetodo.TRANSFERENCIA)).to.eql(150000); });
+    language: text/javascript
+order: 1000

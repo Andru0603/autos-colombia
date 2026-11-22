@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/pagos"
+method: POST
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{operarioId}}"
+body:
+  type: json
+  content: |-
+    {
+      "documento": "1010101010",
+      "meses": 1,
+      "metodoPago": "EFECTIVO"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      const j = pm.response.json();
+      pm.collectionVariables.set("pagoJuanId", j.idPago);
+      pm.test("Monto 220000 calculado por el sistema", function () { pm.expect(Number(j.monto)).to.eql(220000); });
+      pm.test("Tiene comprobante y la vigencia avanza", function () { pm.expect(j.numeroComprobante).to.match(/^REC-\d{6}$/); pm.expect(j.vigenteHasta > j.vigenteDesde).to.eql(true); });
+    language: text/javascript
+order: 1000

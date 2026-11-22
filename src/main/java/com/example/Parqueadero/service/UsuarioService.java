@@ -11,6 +11,9 @@ public interface UsuarioService {
     // RNF8: lanza AccesoDenegadoException si quien llama no es un administrador activo
     void validarAdministrador(Integer idSolicitante);
 
+    // Iteración 3 (RNF13): cualquier usuario ACTIVO (operario o administrador). Devuelve el usuario.
+    Usuario validarUsuarioActivo(Integer idSolicitante);
+
     Usuario crear(Integer idSolicitante, String nombre, String apellido,
             String username, String password, String rol); // HU07
 

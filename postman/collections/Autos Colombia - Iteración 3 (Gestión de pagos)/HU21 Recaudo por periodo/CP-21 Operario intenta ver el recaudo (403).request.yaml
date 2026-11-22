@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/pagos/recaudo?desde={{fechaDesde}}&hasta={{fechaHasta}}"
+method: GET
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{operarioId}}"
+queryParams:
+  desde: "{{fechaDesde}}"
+  hasta: "{{fechaHasta}}"
+scripts:
+  - type: afterResponse
+    code: pm.test("Código HTTP 403", function () { pm.response.to.have.status(403); });
+    language: text/javascript
+order: 2000

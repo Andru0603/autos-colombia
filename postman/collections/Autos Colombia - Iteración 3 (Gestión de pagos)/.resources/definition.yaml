@@ -1,0 +1,19 @@
+$kind: collection
+description: "Pruebas de la iteración 3. ANTES de ejecutar: correr database/reset_pruebas_iteracion3.sql en Workbench (deja tarifas, mensualidades y pagos en su estado inicial). Ejecutar en orden. Datos: admin id=1, operario id=2, Juan Pérez (vigente, carro+moto) y María López (vencida, carro)."
+variables:
+  baseUrl: http://localhost:8082/api
+  adminId: "1"
+  operarioId: "2"
+  pagoJuanId: ""
+  pagoMariaId: ""
+  fechaDesde: ""
+  fechaHasta: ""
+scripts:
+  - type: http:beforeRequest
+    code: |-
+      // Rango de fechas del día de hoy (ayer a mañana) para el recaudo
+      const d = new Date();
+      const f = x => x.toISOString().slice(0, 10);
+      pm.collectionVariables.set('fechaDesde', f(new Date(d.getTime() - 86400000)));
+      pm.collectionVariables.set('fechaHasta', f(new Date(d.getTime() + 86400000)));
+    language: text/javascript

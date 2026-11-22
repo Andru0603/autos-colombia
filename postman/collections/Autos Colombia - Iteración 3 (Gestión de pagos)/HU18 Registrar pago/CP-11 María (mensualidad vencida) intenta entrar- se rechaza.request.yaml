@@ -1,0 +1,20 @@
+$kind: http-request
+name: "CP-11 María (mensualidad vencida) intenta entrar: se rechaza"
+url: "{{baseUrl}}/registro/entrada"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "placa": "DEF456",
+      "idUsuario": {{operarioId}}
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("Mensaje contiene: mensualidad vigente", function () { pm.expect(pm.response.json().mensaje).to.include("mensualidad vigente"); });
+    language: text/javascript
+order: 2000

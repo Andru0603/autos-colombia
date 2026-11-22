@@ -1,0 +1,19 @@
+$kind: http-request
+name: "CP-07 Calcular valor: Juan (carro + moto), 2 meses"
+url: "{{baseUrl}}/pagos/calcular?documento=1010101010&meses=2"
+method: GET
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{operarioId}}"
+queryParams:
+  documento: "1010101010"
+  meses: "2"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("Valor mensual 220000 (150000 + 70000)", function () { pm.expect(Number(pm.response.json().valorMensual)).to.eql(220000); });
+      pm.test("Total 440000", function () { pm.expect(Number(pm.response.json().total)).to.eql(440000); });
+      pm.test("Tiene 2 vehículos y no guarda nada", function () { pm.expect(pm.response.json().vehiculos.length).to.eql(2); });
+    language: text/javascript
+order: 1000

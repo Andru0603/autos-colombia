@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/pagos/{{pagoJuanId}}/comprobante"
+method: GET
+headers:
+  Content-Type: application/json
+  X-Usuario-Id: "{{operarioId}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Código HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("Monto 220000", function () { pm.expect(Number(pm.response.json().monto)).to.eql(220000); });
+      pm.test("Número de comprobante y datos del cliente", function () { const j = pm.response.json(); pm.expect(j.numeroComprobante).to.match(/^REC-\d{6}$/); pm.expect(j.documento).to.eql("1010101010"); pm.expect(j.vehiculos.length).to.eql(2); pm.expect(j).to.have.property("registradoPor"); });
+    language: text/javascript
+order: 1000

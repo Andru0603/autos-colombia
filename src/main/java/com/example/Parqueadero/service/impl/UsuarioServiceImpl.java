@@ -54,6 +54,20 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
     }
 
+    // ---------- Iteración 3 (RNF13): pagos los puede hacer cualquier usuario activo ----------
+    @Override
+    public Usuario validarUsuarioActivo(Integer idSolicitante) {
+        if (idSolicitante == null) {
+            throw new AccesoDenegadoException("Debe iniciar sesión para realizar esta acción");
+        }
+        Usuario solicitante = usuarioRepo.findById(idSolicitante)
+                .orElseThrow(() -> new AccesoDenegadoException("El usuario que hace la solicitud no existe"));
+        if (!Boolean.TRUE.equals(solicitante.getActivo())) {
+            throw new AccesoDenegadoException("El usuario está inactivo");
+        }
+        return solicitante;
+    }
+
     // ---------- HU07: registrar usuario ----------
     @Override
     @Transactional
